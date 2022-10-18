@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.util.Button;
+
 /**
  * This opmode demonstrates how to create a teleop using just the SampleMecanumDrive class without
  * the need for an external robot class. This will allow you to do some cool things like
@@ -20,6 +22,13 @@ public class TeleOpDrive extends LinearOpMode {
         // Initialize SampleMecanumDrive
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
+        Button slowMode = new Button(false, (val) -> {
+            if (val) {
+                drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            } else {
+                drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+        });
 
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
@@ -36,14 +45,19 @@ public class TeleOpDrive extends LinearOpMode {
         while (opModeIsActive() && !isStopRequested()) {
             drive.setWeightedDrivePower(
                     new Pose2d(
-                            gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -gamepad1.right_stick_x
+                            gamepad1.left_stick_y * (slowMode.val ? 0.5 : 1),
+                            -gamepad1.left_stick_x * (slowMode.val ? 0.5 : 1),
+                            -gamepad1.right_stick_x * (slowMode.val ? 0.5 : 1)
                     )
             );
 
             // Update everything. Odometry. Etc.
             drive.update();
+            try {
+                slowMode.update(gamepad1.b);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             // Read pose
             Pose2d poseEstimate = drive.getPoseEstimate();
