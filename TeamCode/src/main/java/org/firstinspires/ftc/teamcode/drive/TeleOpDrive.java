@@ -1,11 +1,21 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.drive.components.Arm;
+import org.firstinspires.ftc.teamcode.drive.components.Bot;
+import org.firstinspires.ftc.teamcode.drive.components.ConeTipper;
+import org.firstinspires.ftc.teamcode.drive.components.Grabber;
+import org.firstinspires.ftc.teamcode.drive.components.Stabiliser;
+import org.firstinspires.ftc.teamcode.drive.components.TipperState;
 import org.firstinspires.ftc.teamcode.util.Button;
+import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 /**
  * This opmode demonstrates how to create a teleop using just the SampleMecanumDrive class without
@@ -19,20 +29,36 @@ import org.firstinspires.ftc.teamcode.util.Button;
 public class TeleOpDrive extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        // Initialize SampleMecanumDrive
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        // Initialize the Bot
+        Bot drive = new Bot(hardwareMap);
+        ConeTipper tipper = new ConeTipper(hardwareMap.servo.get("flipLeft"), hardwareMap.servo.get("flipRight"));
+        Arm arm = new Arm(hardwareMap.dcMotor.get("armMotor"));
+        Grabber grabber = new Grabber(hardwareMap.crservo.get("grabLeft"), hardwareMap.crservo.get("grabRight"));
+        Stabiliser stabiliser = new Stabiliser(hardwareMap.servo.get("stabiliser"));
 
         Button slowMode = new Button(false, (val) -> {
+            drive.SLOW = val;
             if (val) {
                 drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             } else {
                 drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            }
+        });
+
+        Button tipperButton = new Button(true, (val) -> {
+            if (val) {
+                tipper.setLocation(TipperState.UP);
+            } else {
+                tipper.setLocation(TipperState.DOWN);
             }
         });
 
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // Retrieve our pose from the PoseStorage.currentPose static field
         // See AutoTransferPose.java for further details
@@ -43,9 +69,12 @@ public class TeleOpDrive extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive() && !isStopRequested()) {
-            drive.setWeightedDrivePower(
+            // Declare telemetry packet for dashboard field drawing
+            TelemetryPacket packet = new TelemetryPacket();
+            Canvas fieldOverlay = packet.fieldOverlay();
+            Pose2d target = drive.setWeightedDrivePower(
                     new Pose2d(
-                            gamepad1.left_stick_y * (slowMode.val ? 0.5 : 1),
+                            -gamepad1.left_stick_y * (slowMode.val ? 0.5 : 1),
                             -gamepad1.left_stick_x * (slowMode.val ? 0.5 : 1),
                             -gamepad1.right_stick_x * (slowMode.val ? 0.5 : 1)
                     )
@@ -55,14 +84,19 @@ public class TeleOpDrive extends LinearOpMode {
             drive.update();
             try {
                 slowMode.update(gamepad1.b);
+                tipperButton.update(gamepad1.back);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            arm.changePosition(gamepad1.left_trigger - gamepad1.right_trigger);
+            grabber.updateLocation(arm.isUp());
+            grabber.update(gamepad1.a);
+            stabiliser.update((float)arm.getPosition()/Arm.topPosition, gamepad1.y);
 
             // Read pose
             Pose2d poseEstimate = drive.getPoseEstimate();
 
-            if (gamepad1.a) {
+            if (gamepad1.x) {
                 drive.setPoseEstimate(new Pose2d(
                         poseEstimate.getX(),
                         poseEstimate.getY(),
@@ -70,12 +104,23 @@ public class TeleOpDrive extends LinearOpMode {
                 ));
             }
 
+            fieldOverlay.setStroke("#3F51B5");
+            DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
+            fieldOverlay.setStroke("#fc0a36");
+            DashboardUtil.drawRobot(fieldOverlay, new Pose2d(target.getX() + poseEstimate.getX(), target.getY() + poseEstimate.getY(), target.getHeading() + poseEstimate.getHeading()));
+
+
+            // Send telemetry packet off to dashboard
+            FtcDashboard.getInstance().sendTelemetryPacket(packet);
             // Print pose to telemetry
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.addData("heading (deg)", Math.toDegrees(poseEstimate.getHeading()));
+            telemetry.addData("arm", arm.getPosition());
             telemetry.addData("assist", drive.powerSteering());
+            telemetry.addData("Flipper", tipperButton.val);
+            telemetry.addData("Slow", slowMode.val);
             telemetry.update();
         }
     }

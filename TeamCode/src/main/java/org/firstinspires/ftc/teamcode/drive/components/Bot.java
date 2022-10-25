@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.components;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
@@ -52,7 +53,7 @@ import java.util.List;
  * Simple mecanum drive hardware implementation for REV hardware.
  */
 @Config
-public class SampleMecanumDrive extends MecanumDrive {
+public class Bot extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -63,6 +64,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static double OMEGA_WEIGHT = 1;
 
     public static double ASSIST_POWER = 0.2;
+
+    public boolean SLOW = false;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
@@ -77,7 +80,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     private BNO055IMU imu;
     private VoltageSensor batteryVoltageSensor;
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    public Bot(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
@@ -267,11 +270,10 @@ public class SampleMecanumDrive extends MecanumDrive {
         } else {
             diff = heading - 315;
         }
-        double power = diff / 45 * ASSIST_POWER;
-        return power;
+        return diff / 45 * ASSIST_POWER * (SLOW ? 2: 1);
     }
 
-    public void setWeightedDrivePower(Pose2d drivePower) {
+    public Pose2d setWeightedDrivePower(Pose2d drivePower) {
         Pose2d vel = drivePower;
 
         if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
@@ -291,9 +293,11 @@ public class SampleMecanumDrive extends MecanumDrive {
 //        Power assist
         double movement = Math.abs(drivePower.getX()) + Math.abs(drivePower.getY()) / 2;
 
-        vel = new Pose2d(vel.getX(), vel.getY(), vel.getHeading() + powerSteering() * movement);
+        vel = new Pose2d(vel.getX(), vel.getY(), (vel.getHeading() + (powerSteering() * movement)) / 2);
 
         setDrivePower(vel);
+
+        return vel;
     }
 
     @NonNull
