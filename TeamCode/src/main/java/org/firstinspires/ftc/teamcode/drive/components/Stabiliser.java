@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
 public class Stabiliser {
-    public static double minServo = 0.2;
-    public static double maxServo = 0.8;
+    public static double minServo = 0.8;
+    public static double maxServo = 0.2;
     public static double buttonAffect = 0.1;
     public Servo servo;
 

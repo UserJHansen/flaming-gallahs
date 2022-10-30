@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
@@ -79,6 +78,9 @@ public class Bot extends MecanumDrive {
 
     private BNO055IMU imu;
     private VoltageSensor batteryVoltageSensor;
+
+    private WebcamVuforiaLocalizer localizer;
+    private Camera camera;
 
     public Bot(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
@@ -148,7 +150,9 @@ public class Bot extends MecanumDrive {
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        setLocalizer(new MecanumLocalizer(this, true));
+        camera = new Camera(hardwareMap);
+        localizer = new WebcamVuforiaLocalizer(new MecanumLocalizer(this, true), camera);
+        setLocalizer(localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
     }
@@ -270,7 +274,7 @@ public class Bot extends MecanumDrive {
         } else {
             diff = heading - 315;
         }
-        return diff / 45 * ASSIST_POWER * (SLOW ? 2: 1);
+        return diff / 45 * ASSIST_POWER * (SLOW ? 2 : 1);
     }
 
     public Pose2d setWeightedDrivePower(Pose2d drivePower) {
@@ -325,6 +329,14 @@ public class Bot extends MecanumDrive {
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
+    }
+
+    public Pose2d getVuforiaPoseEstimate() {
+        return localizer.getVuforiaPoseEstimate();
+    }
+
+    public Camera getCamera() {
+        return camera;
     }
 
     @Override

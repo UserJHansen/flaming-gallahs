@@ -31,7 +31,7 @@ public class TeleOpDrive extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Initialize the Bot
         Bot drive = new Bot(hardwareMap);
-        ConeTipper tipper = new ConeTipper(hardwareMap.servo.get("flipLeft"), hardwareMap.servo.get("flipRight"));
+        ConeTipper tipper = new ConeTipper(hardwareMap.servo.get("flip"));
         Arm arm = new Arm(hardwareMap.dcMotor.get("armMotor"));
         Grabber grabber = new Grabber(hardwareMap.crservo.get("grabLeft"), hardwareMap.crservo.get("grabRight"));
         Stabiliser stabiliser = new Stabiliser(hardwareMap.servo.get("stabiliser"));
@@ -108,6 +108,8 @@ public class TeleOpDrive extends LinearOpMode {
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
             fieldOverlay.setStroke("#fc0a36");
             DashboardUtil.drawRobot(fieldOverlay, new Pose2d(target.getX() + poseEstimate.getX(), target.getY() + poseEstimate.getY(), target.getHeading() + poseEstimate.getHeading()));
+            fieldOverlay.setStroke("#0afcd0");
+            DashboardUtil.drawRobot(fieldOverlay, drive.getVuforiaPoseEstimate());
 
 
             // Send telemetry packet off to dashboard
