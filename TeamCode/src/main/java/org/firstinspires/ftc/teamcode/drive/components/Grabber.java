@@ -15,22 +15,18 @@ public class Grabber {
         rightServo.setPower(0);
     }
 
-    public void update(boolean buttonPressed) {
-        if (!buttonPressed) {
+    public void update(boolean out, boolean in) {
+        if (!(out || in)) {
             leftServo.setPower(0);
             rightServo.setPower(0);
             return;
         }
-        if (isUp) {
+        if (out) {
             leftServo.setPower(-0.5);
             rightServo.setPower(0.5);
         } else {
             leftServo.setPower(0.5);
             rightServo.setPower(-0.5);
         }
-    }
-
-    public void updateLocation(boolean isUp) {
-        this.isUp = isUp;
     }
 }
