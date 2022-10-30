@@ -89,9 +89,8 @@ public class TeleOpDrive extends LinearOpMode {
                 e.printStackTrace();
             }
             arm.changePosition(gamepad1.left_trigger - gamepad1.right_trigger);
-            grabber.updateLocation(arm.isUp());
-            grabber.update(gamepad1.a);
-            stabiliser.update((float)arm.getPosition()/Arm.topPosition, gamepad1.y);
+            grabber.update(gamepad1.dpad_up, gamepad1.dpad_down);
+            stabiliser.update((float) arm.getPosition() / Arm.topPosition, gamepad1.y);
 
             // Read pose
             Pose2d poseEstimate = drive.getPoseEstimate();
