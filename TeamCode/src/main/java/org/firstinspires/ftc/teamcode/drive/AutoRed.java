@@ -2,12 +2,13 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.components.AprilDetection;
 import org.firstinspires.ftc.teamcode.drive.components.Bot;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
 @Autonomous(group = "advanced")
 public class AutoRed extends LinearOpMode {
@@ -18,12 +19,13 @@ public class AutoRed extends LinearOpMode {
         AprilDetection aprilDetection = new AprilDetection(drive.getCamera(), hardwareMap);
 
         // Right side of red alliance, almost exactly facing the cone
-        Pose2d startPose = new Pose2d(35, -66, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(38.5, -65, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
 
         while (!isStarted()) {
             aprilDetection.update(telemetry);
+            telemetry.update();
             sleep(20);
         }
 
@@ -38,26 +40,26 @@ public class AutoRed extends LinearOpMode {
             detected = 2;
         }
 
-        Trajectory traj = drive.trajectoryBuilder(startPose)
-                .forward(20)
-                .build();
+        TrajectorySequenceBuilder start = drive.trajectorySequenceBuilder(startPose)
+                .splineTo(new Vector2d(37, -36), Math.toRadians(90))
+                .waitSeconds(2);
+
 
         if (detected.compareTo(1) == 0) {
-            drive.followTrajectory(
-                    drive.trajectoryBuilder(traj.end(), true)
-                            .splineTo(new Vector2d(12, -34), Math.toRadians(180))
+            drive.followTrajectorySequence(
+                    start
+                            .strafeLeft(-28)
                             .build()
             );
         } else if (detected.compareTo(2) == 0) {
-            drive.followTrajectory(
-                    drive.trajectoryBuilder(traj.end(), true)
-                            .forward(10)
+            drive.followTrajectorySequence(
+                    start
                             .build()
             );
         } else if (detected.compareTo(3) == 0) {
-            drive.followTrajectory(
-                    drive.trajectoryBuilder(traj.end(), true)
-                            .splineTo(new Vector2d(58, -34), Math.toRadians(0))
+            drive.followTrajectorySequence(
+                    start
+                            .strafeRight(-40)
                             .build()
             );
         }

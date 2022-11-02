@@ -15,13 +15,13 @@ public class Grabber {
         rightServo.setPower(0);
     }
 
-    public void update(boolean out, boolean in) {
+    public void update(boolean in, boolean out) {
         if (!(out || in)) {
             leftServo.setPower(0);
             rightServo.setPower(0);
             return;
         }
-        if (out) {
+        if (in) {
             leftServo.setPower(-0.5);
             rightServo.setPower(0.5);
         } else {

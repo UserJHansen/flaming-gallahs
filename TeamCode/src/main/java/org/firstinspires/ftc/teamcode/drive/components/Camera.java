@@ -16,12 +16,13 @@ public class Camera {
 
     private VuforiaLocalizer vuforia;
     private WebcamName webcamName;
+    private VuforiaLocalizer.Parameters parameters;
 
     public Camera(HardwareMap hardwareMap) {
         webcamName = hardwareMap.get(WebcamName.class, "Webcam");
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+         parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
 
@@ -38,6 +39,10 @@ public class Camera {
 
     public VuforiaLocalizer getVuforia() {
         return vuforia;
+    }
+
+    public VuforiaLocalizer.Parameters getParamaters() {
+        return parameters;
     }
 
     public WebcamName getWebcamName() {

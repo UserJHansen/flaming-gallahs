@@ -57,15 +57,14 @@ public class AprilDetection {
     AprilTagDetection tagOfInterest = null;
 
     public AprilDetection(Camera camera, HardwareMap hardwareMap) {
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("aprilMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        openCVCamera = OpenCvCameraFactory.getInstance().createWebcam(camera.getWebcamName(), cameraMonitorViewId);
+        openCVCamera = OpenCvCameraFactory.getInstance().createVuforiaPassthrough(camera.getVuforia(), camera.getParamaters());
         aprilTagDetectionPipeline = new AprilPipeline(tagsize, fx, fy, cx, cy);
 
         openCVCamera.setPipeline(aprilTagDetectionPipeline);
         openCVCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                openCVCamera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
+                openCVCamera.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -126,11 +125,5 @@ public class AprilDetection {
 
     void tagToTelemetry(AprilTagDetection detection, Telemetry telemetry) {
         telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
-        telemetry.addLine(String.format("Translation X: %.2f feet", detection.pose.x * FEET_PER_METER));
-        telemetry.addLine(String.format("Translation Y: %.2f feet", detection.pose.y * FEET_PER_METER));
-        telemetry.addLine(String.format("Translation Z: %.2f feet", detection.pose.z * FEET_PER_METER));
-        telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
-        telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
-        telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
 }

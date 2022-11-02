@@ -22,6 +22,10 @@ public class Arm {
         this.armMotor.setTargetPosition(Math.min((int) (this.armMotor.getTargetPosition() + change * moveFactor), topPosition));
     }
 
+    public void setPosition(int pos) {
+        this.armMotor.setTargetPosition(pos);
+    }
+
     public boolean isUp() {
         return this.armMotor.getTargetPosition() < topPosition / 2;
     }

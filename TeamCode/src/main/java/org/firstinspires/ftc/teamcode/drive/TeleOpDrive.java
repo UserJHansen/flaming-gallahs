@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,8 +26,14 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
  * <p>
  * This opmode is essentially just LocalizationTest.java with a few additions and comments.
  */
+@Config
 @TeleOp(group = "advanced")
 public class TeleOpDrive extends LinearOpMode {
+    public static double SlowmodeSpeed = 0.25;
+    public static double TurnSlow = 1.3;
+    public static double ForwardGrabber = 0.1;
+    public static double BackwardLift = 0.05;
+
     @Override
     public void runOpMode() throws InterruptedException {
         // Initialize the Bot
@@ -74,9 +81,9 @@ public class TeleOpDrive extends LinearOpMode {
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose2d target = drive.setWeightedDrivePower(
                     new Pose2d(
-                            -gamepad1.left_stick_y * (slowMode.val ? 0.5 : 1),
-                            -gamepad1.left_stick_x * (slowMode.val ? 0.5 : 1),
-                            -gamepad1.right_stick_x * (slowMode.val ? 0.5 : 1)
+                            -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.left_trigger*BackwardLift),
+                            gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1),
+                            -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed*TurnSlow : 1)
                     )
             );
 
@@ -89,6 +96,9 @@ public class TeleOpDrive extends LinearOpMode {
                 e.printStackTrace();
             }
             arm.changePosition(gamepad1.left_trigger - gamepad1.right_trigger);
+            if (gamepad1.a) {
+                arm.setPosition((int) (0.94 * Arm.topPosition));
+            }
             grabber.update(gamepad1.dpad_up, gamepad1.dpad_down);
             stabiliser.update((float) arm.getPosition() / Arm.topPosition, gamepad1.y);
 
@@ -107,8 +117,8 @@ public class TeleOpDrive extends LinearOpMode {
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
             fieldOverlay.setStroke("#fc0a36");
             DashboardUtil.drawRobot(fieldOverlay, new Pose2d(target.getX() + poseEstimate.getX(), target.getY() + poseEstimate.getY(), target.getHeading() + poseEstimate.getHeading()));
-            fieldOverlay.setStroke("#0afcd0");
-            DashboardUtil.drawRobot(fieldOverlay, drive.getVuforiaPoseEstimate());
+//            fieldOverlay.setStroke("#0afcd0");
+//            DashboardUtil.drawRobot(fieldOverlay, drive.getVuforiaPoseEstimate());
 
 
             // Send telemetry packet off to dashboard

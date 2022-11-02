@@ -79,7 +79,6 @@ public class Bot extends MecanumDrive {
     private BNO055IMU imu;
     private VoltageSensor batteryVoltageSensor;
 
-    private WebcamVuforiaLocalizer localizer;
     private Camera camera;
 
     public Bot(HardwareMap hardwareMap) {
@@ -151,8 +150,7 @@ public class Bot extends MecanumDrive {
         rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         camera = new Camera(hardwareMap);
-        localizer = new WebcamVuforiaLocalizer(new MecanumLocalizer(this, true), camera);
-        setLocalizer(localizer);
+        setLocalizer(new MecanumLocalizer(this, true));
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
     }
@@ -329,10 +327,6 @@ public class Bot extends MecanumDrive {
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
-    }
-
-    public Pose2d getVuforiaPoseEstimate() {
-        return localizer.getVuforiaPoseEstimate();
     }
 
     public Camera getCamera() {
