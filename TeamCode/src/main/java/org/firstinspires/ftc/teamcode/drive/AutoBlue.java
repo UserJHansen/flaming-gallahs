@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -13,7 +12,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuild
 
 @Config
 @Autonomous(group = "advanced")
-public class AutoRed extends LinearOpMode {
+public class AutoBlue extends LinearOpMode {
     public static double DistanceLeft = 28;
     public static double DistanceRight = 28;
 
@@ -24,7 +23,7 @@ public class AutoRed extends LinearOpMode {
         AprilDetection aprilDetection = new AprilDetection(drive.getCamera(), hardwareMap);
 
         // Right side of red alliance, almost exactly facing the cone
-        Pose2d startPose = new Pose2d(38.5, -65, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(-38.5, 65, Math.toRadians(270));
 
         drive.setPoseEstimate(startPose);
 
@@ -46,7 +45,7 @@ public class AutoRed extends LinearOpMode {
         }
 
         TrajectorySequenceBuilder start = drive.trajectorySequenceBuilder(startPose)
-                .splineTo(new Vector2d(37, -36), Math.toRadians(90))
+                .splineTo(new Vector2d(-37, 36), Math.toRadians(270))
                 .waitSeconds(2);
 
 

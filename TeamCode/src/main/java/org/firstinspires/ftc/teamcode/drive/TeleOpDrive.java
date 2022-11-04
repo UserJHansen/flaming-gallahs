@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.kinematics.MecanumKinematics;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -31,8 +32,8 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 public class TeleOpDrive extends LinearOpMode {
     public static double SlowmodeSpeed = 0.25;
     public static double TurnSlow = 1.3;
-    public static double ForwardGrabber = 0.1;
-    public static double BackwardLift = 0.05;
+    public static double ForwardGrabber = 0.2;
+    public static double BackwardLift = 0.1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -81,11 +82,19 @@ public class TeleOpDrive extends LinearOpMode {
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose2d target = drive.setWeightedDrivePower(
                     new Pose2d(
-                            -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.left_trigger*BackwardLift),
-                            gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1),
-                            -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed*TurnSlow : 1)
+                            -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.left_trigger * BackwardLift),
+                            -gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1),
+                            -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed * TurnSlow : 1)
                     )
             );
+            telemetry.addData("Drive", MecanumKinematics.robotToWheelVelocities(new Pose2d(
+                    -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.left_trigger * BackwardLift),
+                    gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1),
+                    -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed * TurnSlow : 1)
+            ),1.0,1.0,1.0));
+            telemetry.addData("x-v", -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) + (gamepad1.dpad_down ? -ForwardGrabber : 0) - (gamepad1.left_trigger * BackwardLift));
+            telemetry.addData("y-v", gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1));
+            telemetry.addData("h-v", -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed * TurnSlow : 1));
 
             // Update everything. Odometry. Etc.
             drive.update();
@@ -106,11 +115,12 @@ public class TeleOpDrive extends LinearOpMode {
             Pose2d poseEstimate = drive.getPoseEstimate();
 
             if (gamepad1.x) {
-                drive.setPoseEstimate(new Pose2d(
-                        poseEstimate.getX(),
-                        poseEstimate.getY(),
-                        Math.toRadians(Math.round(Math.toDegrees(poseEstimate.getHeading()) / 90) * 90)
-                ));
+//                drive.setPoseEstimate(new Pose2d(
+//                        poseEstimate.getX(),
+//                        poseEstimate.getY(),
+//                        Math.toRadians(Math.round(Math.toDegrees(poseEstimate.getHeading()) / 90) * 90)
+//                ));
+                arm.reset();
             }
 
             fieldOverlay.setStroke("#3F51B5");
@@ -129,6 +139,7 @@ public class TeleOpDrive extends LinearOpMode {
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.addData("heading (deg)", Math.toDegrees(poseEstimate.getHeading()));
             telemetry.addData("arm", arm.getPosition());
+            telemetry.addData("arm %", ((float) arm.getPosition()/(float) Arm.topPosition)*100);
             telemetry.addData("assist", drive.powerSteering());
             telemetry.addData("Flipper", tipperButton.val);
             telemetry.addData("Slow", slowMode.val);
