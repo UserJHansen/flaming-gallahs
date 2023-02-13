@@ -82,19 +82,11 @@ public class TeleOpDrive extends LinearOpMode {
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose2d target = drive.setWeightedDrivePower(
                     new Pose2d(
-                            -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.left_trigger * BackwardLift),
+                            -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.right_trigger * BackwardLift),
                             -gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1),
                             -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed * TurnSlow : 1)
                     )
             );
-            telemetry.addData("Drive", MecanumKinematics.robotToWheelVelocities(new Pose2d(
-                    -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) - (gamepad1.left_trigger * BackwardLift),
-                    gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1),
-                    -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed * TurnSlow : 1)
-            ),1.0,1.0,1.0));
-            telemetry.addData("x-v", -gamepad1.left_stick_y * (slowMode.val ? SlowmodeSpeed : 1) + (gamepad1.dpad_up ? ForwardGrabber : 0) + (gamepad1.dpad_down ? -ForwardGrabber : 0) - (gamepad1.left_trigger * BackwardLift));
-            telemetry.addData("y-v", gamepad1.left_stick_x * (slowMode.val ? SlowmodeSpeed : 1));
-            telemetry.addData("h-v", -gamepad1.right_stick_x * (slowMode.val ? SlowmodeSpeed * TurnSlow : 1));
 
             // Update everything. Odometry. Etc.
             drive.update();

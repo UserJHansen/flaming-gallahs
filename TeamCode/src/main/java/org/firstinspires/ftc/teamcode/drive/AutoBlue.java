@@ -13,8 +13,8 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuild
 @Config
 @Autonomous(group = "advanced")
 public class AutoBlue extends LinearOpMode {
-    public static double DistanceLeft = 28;
-    public static double DistanceRight = 28;
+    public static double DistanceLeft = 24;
+    public static double DistanceRight = 26;
 
     @Override
     public void runOpMode() throws InterruptedException {
